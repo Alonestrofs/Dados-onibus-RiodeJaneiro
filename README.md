@@ -1,52 +1,87 @@
-Análise de Dados dos Ônibus do Rio de Janeiro
+# 🚌 Análise de Dados dos Ônibus do Rio de Janeiro
 
-Este repositório contém uma pipeline de scripts em Python para coletar, processar e analisar dados de performance dos ônibus da cidade do Rio de Janeiro, utilizando dados públicos da API Data.Rio (SPPO) e feeds GTFS.
+Este repositório contém uma **pipeline completa em Python** para **coletar, processar e analisar dados de performance dos ônibus** da cidade do **Rio de Janeiro**, utilizando informações públicas da **API Data.Rio (SPPO)** e **feeds GTFS**.
 
-Estrutura do Repositório
+---
 
-O projeto é organizado em pastas que separam as etapas da pipeline de dados:
+## 📁 Estrutura do Repositório
 
-/gtfs/: Contém os arquivos estáticos do feed GTFS (routes.txt, stops.txt, etc.), usados como base para mapeamento.
+A organização segue uma arquitetura modular, separando claramente as etapas da pipeline de dados:
+├── /data/gtfs/ # Arquivos estáticos do feed GTFS (routes.txt, stops.txt, etc.)
+├── data_inputs/ # Arquivos manuais ou auxiliares (ex: mapeamentos, equivalências de linhas)
+├── src/ # Código-fonte principal da pipeline ETL (Extração, Transformação e Carga)
+├── analysis/ # Scripts de análise exploratória e geração de relatórios
+├── reports/ # Relatórios finais gerados após a análise (ex: analise_viagens.txt)
+└── tools/ # Scripts utilitários para verificação e monitoramento dos dados brutos
 
-/data_inputs/: Contém arquivos de dados manuais ou auxiliares que servem de input para os scripts (ex: mapeamento de viações, equivalências de linhas).
 
-/src/: Contém o código-fonte principal da pipeline de ETL (Extração, Transformação e Carga). Os scripts são numerados na ordem de execução.
+---
 
-/analysis/: Contém scripts de análise exploratória (EDA) e geração de relatórios, que consomem os dados processados pela pipeline src/.
+## ⚙️ Requisitos e Instalação
 
-/reports/: Contém os relatórios finais gerados pelos scripts de análise (ex: analise_viagens.txt).
+### 🐍 Pré-requisitos
 
-/tools/: Contém scripts utilitários para monitoramento e verificação dos dados brutos (ex: verificar_dados_sppo.py).
+- Python 3.8 ou superior
+- Acesso à internet (para consumir a API Data.Rio)
+- Feed GTFS atualizado da cidade do Rio de Janeiro
 
-Requisitos e Instalação
+### 📦 Instalação das Dependências
 
-Para executar os scripts deste repositório, é necessário ter o Python 3 instalado e as seguintes bibliotecas.
+Instale todas as bibliotecas necessárias com um único comando:
 
-Você pode instalar todas de uma vez com o seguinte comando:
-
+```bash
 pip install pandas numpy openpyxl geopy tqdm ijson
 
 
-Bibliotecas Utilizadas:
+| Biblioteca   | Função Principal                                           |
+| ------------ | ---------------------------------------------------------- |
+| **pandas**   | Manipulação e processamento de dados tabulares (GTFS, CSV) |
+| **numpy**    | Cálculos estatísticos e numéricos (análise de performance) |
+| **openpyxl** | Leitura e escrita de planilhas `.xlsx` pelo pandas         |
+| **geopy**    | Cálculo de distâncias geográficas (great-circle)           |
+| **tqdm**     | Exibição de barras de progresso durante o processamento    |
+| **ijson**    | Leitura eficiente de grandes arquivos JSON em streaming    |
 
-pandas: Usada extensivamente para carregar e processar os arquivos GTFS e o CSV final.
 
-numpy: Usada pelo analisar_performance_viagens.py para cálculos estatísticos.
+🔄 Pipeline de Dados (ETL)
 
-openpyxl: Necessário para que o pandas possa ler os arquivos .xlsx.
+A pipeline é composta por scripts numerados localizados em /src/, representando as etapas clássicas de Extração, Transformação e Carga:
 
-geopy: Usada nos scripts src/03_processar_viagens_carro.py e src/04_converter_para_csv.py para calcular distâncias (great_circle).
+Extração
+Coleta dados do feed GTFS e da API SPPO.
 
-tqdm: Usada em múltiplos scripts para exibir barras de progresso durante o processamento de dados.
+Transformação
+Processa, filtra e cruza as informações das viagens e veículos.
 
-ijson: Usada pelo src/04_converter_para_csv.py para ler o viagens_processadas.json sem carregar tudo na memória.
+Carga
+Gera o arquivo consolidado viagens.csv com os dados limpos e prontos para análise.
 
-Análise
+📊 Análise de Performance
 
-Após a pipeline ser executada e o viagens.csv ser gerado, você pode executar os scripts da pasta analysis/.
+Após a execução completa da pipeline, o arquivo final viagens.csv é gerado na pasta raiz ou em /data_outputs/.
 
-analysis/analisar_performance_viagens.py
+▶️ Execução da Análise
 
-O que faz: Lê o viagens.csv, aplica filtros estatísticos (IQR, etc.) e gera um relatório de performance.
+Use o script principal da pasta analysis/:
+├──python analysis/analisar_performance_viagens.py
 
-Gera: reports/analise_viagens.txt.
+🔍 O que ele faz
+
+Lê o arquivo viagens.csv
+Aplica filtros estatísticos (como IQR para outliers)
+Calcula métricas de desempenho por linha, empresa e horário
+Gera um relatório detalhado de performance
+
+📁 Saída
+
+O resultado é salvo em:
+reports/analise_viagens.txt
+
+🧰 Ferramentas Auxiliares
+A pasta /tools/ contém utilitários de suporte, como:
+verificar_dados_sppo.py: Verifica a integridade e consistência dos dados brutos obtidos da API SPPO.
+Scripts adicionais para depuração e monitoramento dos feeds GTFS.
+
+🏙️ Fontes dos Dados
+API Data.Rio – SPPO
+Feed GTFS – Mobilidade Urbana RJ
