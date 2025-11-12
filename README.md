@@ -25,8 +25,7 @@ A organização segue uma arquitetura modular, separando claramente as etapas da
 ### 🐍 Pré-requisitos
 
 * Python 3.8 ou superior
-* Acesso à internet (para consumir a API Data.Rio)
-* Feed GTFS atualizado da cidade do Rio de Janeiro
+* Acesso à API, caso queira apenas usar o codigo para extrair a API
 
 ### 📦 Instalação das Dependências
 
