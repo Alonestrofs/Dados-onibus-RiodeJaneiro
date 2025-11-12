@@ -43,6 +43,7 @@ pip install pandas numpy openpyxl geopy tqdm ijson
 | **ijson**    | Leitura eficiente de grandes arquivos JSON em streaming    |
 
 
+
 🔄 Pipeline de Dados (ETL)
 
 A pipeline é composta por scripts numerados localizados em /src/, representando as etapas clássicas de Extração, Transformação e Carga:
