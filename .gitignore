@@ -1,0 +1,26 @@
+Ignorar arquivos de sistema e cache do Python
+
+pycache/
+*.pyc
+.env
+.DS_Store
+
+--- IGNORAR DADOS BRUTOS E PROCESSADOS---
+
+Estes arquivos são gerados pelos scripts, não devem ir para o GitHub.
+
+1. Dados brutos da API (do 'agregar.py')
+
+sppo/
+
+2. JSONs por carro (do 'agregar.py')
+
+carros/
+
+3. JSON gigante de viagens processadas (do 'processar_viagens_carro.py')
+
+viagens_processadas.json
+
+5. Arquivos JSON gerados (do 'gerar_terminais_gtfs.py')
+
+pontos_finais.json
