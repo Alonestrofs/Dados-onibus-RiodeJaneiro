@@ -114,7 +114,7 @@ A pasta `/tools/` contém utilitários de suporte, como:
 
 ## 🏙️ Fontes dos Dados
 
-* API Data.Rio – SPPO: `https://data.rio`
-* Feed GTFS – Mobilidade Urbana RJ: (coloque aqui o link do feed GTFS utilizado)
+* API Data.Rio – SPPO
+* Feed GTFS – Mobilidade Urbana RJ
 
 ---
