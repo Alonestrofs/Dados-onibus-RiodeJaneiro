@@ -9,8 +9,7 @@ def criar_mapeamento_desc():
     entre 'route_short_name' e 'route_desc' para todas as linhas
     onde 'route_desc' não é uma string vazia.
     """
-    
-    # --- 1. Timer iniciado ---
+    # Inicia timer para medir tempo de execução
     inicio_script = time.perf_counter()
     
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -18,7 +17,7 @@ def criar_mapeamento_desc():
     output_filename = "mapeamento_route_desc.json"
     
     try:
-        # 1. Carregar o arquivo routes.txt
+        # Carrega o arquivo de rotas do GTFS
         print("Carregando 'gtfs/routes.txt'...")
         # Carregamos tudo como string para evitar problemas de tipo
         routes_df = pd.read_csv("routes.txt", low_memory=False, dtype=str)
@@ -33,15 +32,11 @@ def criar_mapeamento_desc():
         return
 
     try:
-        # 2. Padronizar valores 'vazios'
-        # Preenche valores ausentes (NaN) com uma string vazia
+        # Preenche valores ausentes em 'route_desc' com string vazia
         routes_df['route_desc'] = routes_df['route_desc'].fillna('')
 
-        # 3. Criar a máscara de filtragem
-        # Queremos linhas onde 'route_desc' NÃO é uma string vazia ('')
-        # E também NÃO é a string literal '""' (que pode vir do CSV)
+        # Filtra apenas linhas com 'route_desc' preenchido
         mask = (routes_df['route_desc'] != '') & (routes_df['route_desc'] != '""')
-        
         filtered_df = routes_df[mask]
 
         print(f"Encontradas {len(filtered_df)} rotas com 'route_desc' preenchido.")
@@ -50,22 +45,17 @@ def criar_mapeamento_desc():
             print("Nenhuma rota com 'route_desc' não-vazio foi encontrada.")
             lista_de_mapeamento = []
         else:
-            # 4. Selecionar apenas as colunas de interesse
+            # Seleciona colunas de interesse e converte para lista de listas
             mappings_df = filtered_df[['route_short_name', 'route_desc']]
-        
-            # 5. Converter o DataFrame para uma lista de listas
-            # (ex: [['SP864', 'LECD122'], ['666', 'LECD69']])
             lista_de_mapeamento = mappings_df.values.tolist()
 
-        # 6. Salvar em JSON
+        # Salva resultado em arquivo JSON
         print(f"Salvando resultados em '{output_filename}'...")
         with open(output_filename, 'w', encoding='utf-8') as f:
-            # Salva a lista diretamente no arquivo JSON
             json.dump(lista_de_mapeamento, f, indent=2, ensure_ascii=False)
-            
         print(f"Sucesso! Mapeamento salvo.")
         
-        # Mostra uma prévia dos 5 primeiros resultados, se houver
+        # Mostra amostra dos primeiros resultados
         if lista_de_mapeamento:
             print(f"\nExemplo dos primeiros 5 itens encontrados:")
             for item in lista_de_mapeamento[:5]:
@@ -74,14 +64,16 @@ def criar_mapeamento_desc():
     except Exception as e:
         print(f"Ocorreu um erro durante o processamento: {e}")
 
-    # --- Timer finalizado e impresso ---
+    # Finaliza timer e mostra tempo total
     fim_script = time.perf_counter()
     tempo_total = fim_script - inicio_script
     print("\n" + "="*40)
     print(f"Tempo total de execução: {tempo_total:.4f} segundos")
     print("="*40)
 
-
 # Executa a função principal quando o script é rodado
-if __name__ == "__main__":
+def main():
     criar_mapeamento_desc()
+
+if __name__ == "__main__":
+    main()
