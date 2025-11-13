@@ -21,6 +21,7 @@ INPUT_FILES = ["viagens.csv", "viagens.xlsx", "viagens.xls"]
 OUTPUT_TXT = "analise_viagens2.txt"
 
 # Nomes padrão desejados
+# Mapeamento de nomes de colunas para padronização
 STANDARD_COLS = {
     # pode ajustar mapeamentos se a planilha tiver nomes diferentes:
     "Viação": "Viacao",
@@ -41,6 +42,7 @@ STANDARD_COLS = {
     "Velocidade Média_km/h": "Velocidade_Media",
 }
 
+# Função para encontrar o arquivo de entrada disponível
 def find_input_file():
     for name in INPUT_FILES:
         p = Path(name)
@@ -56,6 +58,7 @@ def safe_read(file_path: Path):
         # tenta autodetectar separador comum
         return pd.read_csv(file_path)
 
+# Função para padronizar nomes de colunas
 def standardize_columns(df: pd.DataFrame):
     new_cols = {}
     for col in df.columns:
@@ -95,12 +98,12 @@ def parse_speed_to_float(s):
     if isinstance(s, (int, float, np.floating, np.integer)):
         return float(s)
     ss = str(s).strip()
-    # remove spaces e 'km/h' e vírgulas
+    # remove espaços, 'km/h' e vírgulas
     ss = ss.replace(" ", "").lower()
     ss = ss.replace("km/h", "")
-    # se contiver virgula decimal, troca por ponto
+    # se tiver virgula decimal, troca por ponto
     ss = ss.replace(",", ".")
-    # remove tudo que nao numero ou ponto ou - 
+    # remove tudo que nao é numero ou ponto ou - 
     ss = re.sub(r"[^0-9\.\-]", "", ss)
     if ss == "":
         return np.nan
@@ -109,6 +112,7 @@ def parse_speed_to_float(s):
     except Exception:
         return np.nan
 
+# Função para converter duração em segundos
 def parse_duration_to_seconds(x):
     if pd.isna(x):
         return np.nan
@@ -131,7 +135,6 @@ def parse_duration_to_seconds(x):
             return np.nan
         return h*3600 + m*60 + sec
     # unidades explícitas
-    # ex: "1h 20m 30s", "2h", "45m", "120s", "1.5h"
     # procura números seguidos de unidade
     m = re.findall(r"(\d+(\.\d+)?)(\s*)(h|hr|hrs|hora|horas|m|min|mins|minuto|minutos|s|sec|segs|segundo|segundos)\b", s, flags=re.IGNORECASE)
     if m:
@@ -156,6 +159,7 @@ def parse_duration_to_seconds(x):
     return np.nan
 
 def iqr_filter_groupwise(df, group_col, cols_to_check, k=1.5):
+    # Remove outliers por grupo usando IQR
     df = df.copy()
     mask_keep = pd.Series(True, index=df.index)
     grouped = df.groupby(group_col)
@@ -178,7 +182,7 @@ def iqr_filter_groupwise(df, group_col, cols_to_check, k=1.5):
     return df[mask_keep].copy()
 
 def top_n_series(s: pd.Series, n=10, ascending=False):
-    """Retorna tuplas (index, valor) do top n da série (ordenada por valor)"""
+    """Retorna a dulpa index, valor do top n da série (ordenada por valor)"""
     if ascending:
         res = s.nsmallest(n)
     else:
@@ -202,7 +206,7 @@ def main():
     print(f"Lendo arquivo: {input_path}")
     df = safe_read(input_path)
 
-    # Padroniza nomes de colunas
+    # Padroniza nomes das colunas
     df = standardize_columns(df)
 
     # Verifica presença das colunas esperadas
@@ -211,7 +215,7 @@ def main():
     if missing:
         print("Aviso: as seguintes colunas esperadas não foram encontradas automaticamente:", missing)
         print("Colunas detectadas:", list(df.columns))
-        # Continuar mesmo assim (usuário pode ter diferentes nomes); o script tentará seguir com o que houver
+        # Continua mesmo se faltar alguma coluna
 
     # Normaliza e cria as colunas desejadas
     # Quilometragem
@@ -237,9 +241,7 @@ def main():
 
     # Remover linhas totalmente vazias essenciais
     df = df.dropna(subset=["Linha", "Carro"], how="all")
-
-    # Requisito: não filtrar BRT - pois você já removeu manualmente no Excel
-    # Aplicar filtros básicos (descartar)
+    # Filtros básicos para descartar viagens inválidas
     before_count = len(df)
     filt_basic = (
         (df["Quilometragem"].fillna(-1) > 1) &
@@ -302,9 +304,8 @@ def main():
     carros_validos = carro_counts[carro_counts >= 10].index
     carro_med_vel = dfc[dfc["Carro"].isin(carros_validos)].groupby("Carro")["Velocidade_Media"].median().sort_values(ascending=False)
     carro_med_vel_min = dfc[dfc["Carro"].isin(carros_validos)].groupby("Carro")["Velocidade_Media"].median().sort_values(ascending=True)
-
-    # Também top10 de carros mais lentos independentemente? Pediste "da mesma forma apontar os carros mais lentos" — vou usar mesma condição de >=10 viagens.
     # Prepara conteúdo do relatório
+    # Função utilitária para formatar rankings
     def top_to_text(series, n=10, reverse=False, fmt_val="{:.3f}"):
         # series: pandas Series index -> value
         if series.empty:
@@ -323,11 +324,12 @@ def main():
         return "\n".join(lines) + "\n"
 
     with open(OUTPUT_TXT, "w", encoding="utf-8") as f:
-        f.write("ANÁLISE DE VIAGENS (APÓS LIMPEZA)\n")
+        f.write("ANÁLISE DE VIAGENS\n")
         f.write("="*60 + "\n\n")
         f.write(f"Total de viagens após limpeza: {len(dfc)}\n")
         f.write(f"Linhas antes dos filtros: {before_count}; após filtros básicos: {after_basic_count}; após IQR: {after_iqr_count}\n\n")
 
+        # Cada seção do relatório apresenta um ranking diferente
         f.write("SEÇÃO 1 — ANÁLISE DE LINHAS (POR MEDIANA)\n")
         f.write("- Top 10 Linhas com MAIOR Mediana de Quilometragem\n")
         f.write(top_to_text(linha_med_quil, 10, reverse=False, fmt_val="{:.3f}"))
